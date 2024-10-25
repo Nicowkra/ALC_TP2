@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
 from numpy import linalg as LA
-valor = 0.00000000000000001
+valor = 1e-10
 A1 = np.array([[0.186,0.521,0.014,0.32,0.134],[0.24,0.073,0.219,0.013,0.327],[0.098,0.12,0.311,0.302,0.208],[0.173,0.03,0.133,0.14,0.074],[0.303,0.256,0.323,0.225,0.257]])
 A2 = np.array([[0.186,0.521,0.014,0.32,0.134],[0.24,0.073,0.219,0.013,0.327],[0.098,0.12,0.311,0.302,0.208],[0.173,0.03,0.133,0.14,0.074],[0.003,0.256,0.323,0.225,0.257]])
 
@@ -75,7 +75,7 @@ tabla.index = ["Autovalor"]
 n = Pry_int.shape[0]
 Id = np.identity(n)
 e = np.ones(n)
-En = Id - 1/n * (np.atleast_2d(e).T @ np.atleast_2d(e))
+En = Id - 1/n * np.ones((n,n))
 C = ((En @ Pry_int.to_numpy()).T @ (En @ Pry_int.to_numpy()))/(40-1) 
 
 def create(n):
@@ -84,26 +84,35 @@ def create(n):
      return x / np.linalg.norm(x)
 
 
-def Hotelling(A,v,k,e):
-    for i in range(k):
+def Hotelling(A,v,valor,c):
+    i = 0
+    while True:
+        i += 1
         v_prev = v
         v = A @ v
         v = v / np.linalg.norm(v)
-        res = v.T - v_prev
-        if np.linalg.norm(res,2) < (1-e):
+        print(c)
+        print("v:",v)
+        print("v_prev:", v_prev)
+        print("cant:",i)
+        vectEstrella = vectorEstrella(v)
+        res = vectEstrella - v_prev
+        print(np.linalg.norm(res,2))
+        if np.linalg.norm(res,2) < valor:
             return v
-    print("No")
 vect = create(n)        
-vectH = Hotelling(C,vect,1000,0.0000001)
+vectH = Hotelling(C,vect,valor,"H1")
 print(vectH)
 vectHEstrella = vectorEstrella(vectH)
 autoValH = (vectHEstrella @ C @ vectH)/ (vectHEstrella @ vectH)
 print(autoValH)
 
+print("------------------")
 
 C2 = C - autoValH * (vectH @ vectHEstrella)
 vect2 = create(n)
-vectH2 = Hotelling(C2,vect2,1000,0.0000001)
+vectH2 = Hotelling(C2,vect2,valor,"H2")
 print(vectH2)
 vectHEstrella2 = vectorEstrella(vectH2)
 autoValH2 = (vectHEstrella2 @ C2 @ vectH2)/ (vectHEstrella2 @ vectH2)
+print(autoValH2)
