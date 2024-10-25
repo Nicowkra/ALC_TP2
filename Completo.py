@@ -62,8 +62,48 @@ Nic = matriz[matriz["Country_iso3"] == "NIC"] # Crea la tabla con filas de NIC
 Pry_int= Pry.loc[:,Pry_col] 
 Nic_int = Nic.loc[:,Nic_col] 
 
+
+vect_Pry = np.random.randint(0,1000,size = Pry_int.shape[0]) #Creo vector aleatorio
+aval_Pry,avect_Pry = metodoPotencia(Pry_int.to_numpy(),vect_Pry,250) #Uso metodo de potencia
+
+vect_Nic = np.random.randint(0,1000,size = Nic_int.shape[0])
+aval_Nic,avect_Nic = metodoPotencia(Nic_int.to_numpy(),vect_Nic,250)
+
+tabla = pd.DataFrame({"Pry":[aval_Pry],"Nic":[aval_Nic]})
+tabla.index = ["Autovalor"]
+
 n = Pry_int.shape[0]
 Id = np.identity(n)
 e = np.ones(n)
-c = 1/n * (e @ e.T)
-En = Id - 1/n * (e @ e.T)
+En = Id - 1/n * (np.atleast_2d(e).T @ np.atleast_2d(e))
+C = ((En @ Pry_int.to_numpy()).T @ (En @ Pry_int.to_numpy()))/(40-1) 
+
+def create(n):
+     x = np.random.normal(size=n)
+     x -= x.mean()
+     return x / np.linalg.norm(x)
+
+
+def Hotelling(A,v,k,e):
+    for i in range(k):
+        v_prev = v
+        v = A @ v
+        v = v / np.linalg.norm(v)
+        res = v.T - v_prev
+        if np.linalg.norm(res,2) < (1-e):
+            return v
+    print("No")
+vect = create(n)        
+vectH = Hotelling(C,vect,1000,0.0000001)
+print(vectH)
+vectHEstrella = vectorEstrella(vectH)
+autoValH = (vectHEstrella @ C @ vectH)/ (vectHEstrella @ vectH)
+print(autoValH)
+
+
+C2 = C - autoValH * (vectH @ vectHEstrella)
+vect2 = create(n)
+vectH2 = Hotelling(C2,vect2,1000,0.0000001)
+print(vectH2)
+vectHEstrella2 = vectorEstrella(vectH2)
+autoValH2 = (vectHEstrella2 @ C2 @ vectH2)/ (vectHEstrella2 @ vectH2)
