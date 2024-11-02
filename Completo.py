@@ -49,7 +49,7 @@ def creaTabla(A1,A2):
     
     
     
-matriz = pd.read_excel("matriz.xlsx", sheet_name ="LAC_IOT_2011",)
+matriz = pd.read_excel("C:/Users/nicow/Desktop/Facultad/ALC/ALC_TP2/matriz.xlsx", sheet_name ="LAC_IOT_2011",)
 Nic_col = []    
 Pry_col = []
 for i in range(1,41): #Crea la lista de columnas a filtrar
@@ -89,30 +89,43 @@ def Hotelling(A,v,valor,c):
     while True:
         i += 1
         v_prev = v
-        v = A @ v
-        v = v / np.linalg.norm(v)
-        print(c)
-        print("v:",v)
-        print("v_prev:", v_prev)
-        print("cant:",i)
-        vectEstrella = vectorEstrella(v)
-        res = vectEstrella - v_prev
-        print(np.linalg.norm(res,2))
-        if np.linalg.norm(res,2) < valor:
-            return v
+        vEstrella_prev = vectorEstrella(v_prev)
+        aval_prev = (vEstrella_prev @ A @ v_prev) / (vEstrella_prev @ v_prev)
+        
+        v = (A @ v)/ np.linalg.norm(A @ v)
+
+        vEstrella = vectorEstrella(v)
+        aval = (vEstrella @ A @ v) / (vEstrella @ v)
+        res = vEstrella - v_prev
+
+        
+        if (aval >=0) and (np.linalg.norm(res,2) < valor):
+            return aval,v 
+            
+        elif (aval < 0) and ((abs(aval)-abs(aval_prev)) < valor):
+
+            return aval,v
+            
 vect = create(n)        
-vectH = Hotelling(C,vect,valor,"H1")
+avalH, vectH = Hotelling(C,vect,valor,"H1")
+eival, eivect = LA.eig(C)
 print(vectH)
-vectHEstrella = vectorEstrella(vectH)
-autoValH = (vectHEstrella @ C @ vectH)/ (vectHEstrella @ vectH)
-print(autoValH)
+print(eivect[:,0])
+print(avalH)
+print(eival[0])
+tabla = pd.DataFrame({"Aproximado":[vectH,avalH],"Real":[eivect[:,0],eival[0]]})
+tabla.index = ["Autovector","Autovalor"]
+tabla
 
 print("------------------")
-
-C2 = C - autoValH * (vectH @ vectHEstrella)
+vectHEstrella = vectorEstrella(vectH)
+C2 = C - avalH * (vectH @ vectHEstrella)
 vect2 = create(n)
-vectH2 = Hotelling(C2,vect2,valor,"H2")
+avalH2, vectH2 = Hotelling(C2,vect2,valor,"H2")
+eival2,eivect2 = LA.eig(C2)
 print(vectH2)
+print(eivect2[:,0])
 vectHEstrella2 = vectorEstrella(vectH2)
 autoValH2 = (vectHEstrella2 @ C2 @ vectH2)/ (vectHEstrella2 @ vectH2)
 print(autoValH2)
+print(eival2[0])
