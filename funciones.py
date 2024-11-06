@@ -106,21 +106,11 @@ def monteCarlo(A):
 # =============================================================================
 # FUNCIONES PARA CONSIGNA 10
 # =============================================================================
+def centrarDatos(matriz):
+    # Centramos los datos
+    d, n = matriz.shape
+    m = np.mean(matriz.values, axis=1)  # Asegúrate de que m sea un array de numpy
 
-def calculoACP(data):
-    d, n = data.shape
-    m = np.mean(data.values, axis=1)  # Asegúrate de que m sea un array de numpy
-
-    X = data.values - np.tile(m.reshape((len(m), 1)), (1, n))  # Usa data.values para obtener el array de numpy
+    X = matriz.values - np.tile(m.reshape((len(m), 1)), (1, n))  # Usa data.values para obtener el array de numpy
     Mcov = np.dot(X, X.T) / n  # Covariance Matrix
-    
-    D, V = np.linalg.eigh(Mcov)
-    
-    # Ordenamos los autovalores de mayor a menor
-    idx = np.argsort(-D)
-    D = D[idx]
-    V = V[:, idx]
-    
-    return D, V, X, m
-
-D, V, X, m = calculoACP(A1)
+    return X, Mcov
