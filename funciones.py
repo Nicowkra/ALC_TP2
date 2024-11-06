@@ -102,7 +102,24 @@ def monteCarlo(A):
         DE = DE + (pow(a,2))
     desvioEstandar = np.sqrt(DE/len(vectores))
     return promedio, desvioEstandar
+# =============================================================================
+# FUNCIONES PARA CONSIGNA 4
+# =============================================================================
+def suma_iterativa(A,n):
+    k = A.shape[0]
+    sucesion = np.identity(k) 
+    res = [1]
+    B = A.copy()
+    for i in range(n):
+        sucesion = sucesion + A
+        A = A@B
+    return sucesion
 
+#plt.imshow(suma_iterativa(A1,10))
+#plt.imshow(suma_iterativa(A1,100))
+
+#plt.imshow(suma_iterativa(A2,10))
+#plt.imshow(suma_iterativa(A2,100))
 # =============================================================================
 # FUNCIONES PARA CONSIGNA 10
 # =============================================================================
