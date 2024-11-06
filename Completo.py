@@ -1,6 +1,11 @@
 import numpy as np
 import pandas as pd
 from numpy import linalg as LA
+import matplotlib.pyplot as plt
+import seaborn as sns
+from sklearn.cluster import KMeans, AgglomerativeClustering
+
+# %% Ej 3
 valor = 1e-10
 A1 = np.array([[0.186,0.521,0.014,0.32,0.134],[0.24,0.073,0.219,0.013,0.327],[0.098,0.12,0.311,0.302,0.208],[0.173,0.03,0.133,0.14,0.074],[0.303,0.256,0.323,0.225,0.257]])
 A2 = np.array([[0.186,0.521,0.014,0.32,0.134],[0.24,0.073,0.219,0.013,0.327],[0.098,0.12,0.311,0.302,0.208],[0.173,0.03,0.133,0.14,0.074],[0.003,0.256,0.323,0.225,0.257]])
@@ -48,7 +53,7 @@ def creaTabla(A1,A2):
     tabla.index = ["A1","A2"]
     
     
-    
+#%% Ej 5 
 matriz = pd.read_excel("C:/Users/nicow/Desktop/Facultad/ALC/ALC_TP2/matriz.xlsx", sheet_name ="LAC_IOT_2011",)
 Nic_col = []    
 Pry_col = []
@@ -72,12 +77,8 @@ aval_Nic,avect_Nic = metodoPotencia(Nic_int.to_numpy(),vect_Nic,250)
 tabla = pd.DataFrame({"Pry":[aval_Pry],"Nic":[aval_Nic]})
 tabla.index = ["Autovalor"]
 
-n = Pry_int.shape[0]
-Id = np.identity(n)
-e = np.ones(n)
-En = Id - 1/n * np.ones((n,n))
-C = ((En @ Pry_int.to_numpy()).T @ (En @ Pry_int.to_numpy()))/(40-1) 
 
+#%% Ej 7
 def create(n):
      x = np.random.normal(size=n)
      x -= x.mean()
@@ -103,8 +104,14 @@ def Hotelling(A,v,valor,c):
             return aval,v 
             
         elif (aval < 0) and ((abs(aval)-abs(aval_prev)) < valor):
-
             return aval,v
+        
+        
+n = Pry_int.shape[0]
+Id = np.identity(n)
+e = np.ones(n)
+En = Id - 1/n * np.ones((n,n))
+C = ((En @ Pry_int.to_numpy()).T @ (En @ Pry_int.to_numpy()))/(40-1) 
             
 vect = create(n)        
 avalH, vectH = Hotelling(C,vect,valor,"H1")
@@ -115,7 +122,6 @@ print(avalH)
 print(eival[0])
 tabla = pd.DataFrame({"Aproximado":[vectH,avalH],"Real":[eivect[:,0],eival[0]]})
 tabla.index = ["Autovector","Autovalor"]
-tabla
 
 print("------------------")
 vectHEstrella = vectorEstrella(vectH)
@@ -129,3 +135,21 @@ vectHEstrella2 = vectorEstrella(vectH2)
 autoValH2 = (vectHEstrella2 @ C2 @ vectH2)/ (vectHEstrella2 @ vectH2)
 print(autoValH2)
 print(eival2[0])
+
+# %%  Ej 8
+def proyectar(A,v1,v2):
+    V = np.column_stack((v1,v2))
+    return A @ V
+
+Arr_proyectada = proyectar(Pry_int.to_numpy(),vectH,vectH2)
+
+
+HClust = AgglomerativeClustering
+hc_comp = HClust(distance_threshold = None, n_clusters = 3 , linkage = 'complete')
+hc_comp.fit(Arr_proyectada)
+
+fig , ax = plt.subplots(figsize =(8 ,8))
+ax.scatter(Arr_proyectada[:,0], Arr_proyectada[:,1], c=hc_comp.labels_)
+ax.set_title("Agglomerative Clustering Results");
+
+# %% Ej 11
