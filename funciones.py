@@ -12,6 +12,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 from sklearn.cluster import KMeans
 from sklearn.cluster import DBSCAN
+from IPython.display import display, HTML
 
 # =============================================================================
 # FUNCIONES PARA CONSIGNA 2
@@ -102,3 +103,24 @@ def monteCarlo(A):
     desvioEstandar = np.sqrt(DE/len(vectores))
     return promedio, desvioEstandar
 
+# =============================================================================
+# FUNCIONES PARA CONSIGNA 10
+# =============================================================================
+
+def calculoACP(data):
+    d, n = data.shape
+    m = np.mean(data.values, axis=1)  # Asegúrate de que m sea un array de numpy
+
+    X = data.values - np.tile(m.reshape((len(m), 1)), (1, n))  # Usa data.values para obtener el array de numpy
+    Mcov = np.dot(X, X.T) / n  # Covariance Matrix
+    
+    D, V = np.linalg.eigh(Mcov)
+    
+    # Ordenamos los autovalores de mayor a menor
+    idx = np.argsort(-D)
+    D = D[idx]
+    V = V[:, idx]
+    
+    return D, V, X, m
+
+D, V, X, m = calculoACP(A1)
