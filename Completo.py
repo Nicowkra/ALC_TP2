@@ -3,7 +3,8 @@ import pandas as pd
 from numpy import linalg as LA
 import matplotlib.pyplot as plt
 import seaborn as sns
-from sklearn.cluster import KMeans, AgglomerativeClustering
+from sklearn.cluster import KMeans, AgglomerativeClustering, DBSCAN
+import funcionesTP1 as f1
 
 # %% Ej 3
 valor = 1e-10
@@ -85,7 +86,7 @@ def create(n):
      return x / np.linalg.norm(x)
 
 
-def Hotelling(A,v,valor,c):
+def Hotelling(A,v,valor):
     i = 0
     while True:
         i += 1
@@ -114,7 +115,7 @@ En = Id - 1/n * np.ones((n,n))
 C = ((En @ Pry_int.to_numpy()).T @ (En @ Pry_int.to_numpy()))/(40-1) 
             
 vect = create(n)        
-avalH, vectH = Hotelling(C,vect,valor,"H1")
+avalH, vectH = Hotelling(C,vect,valor)
 eival, eivect = LA.eig(C)
 print(vectH)
 print(eivect[:,0])
@@ -127,7 +128,7 @@ print("------------------")
 vectHEstrella = vectorEstrella(vectH)
 C2 = C - avalH * (vectH @ vectHEstrella)
 vect2 = create(n)
-avalH2, vectH2 = Hotelling(C2,vect2,valor,"H2")
+avalH2, vectH2 = Hotelling(C2,vect2,valor)
 eival2,eivect2 = LA.eig(C2)
 print(vectH2)
 print(eivect2[:,0])
@@ -144,6 +145,7 @@ def proyectar(A,v1,v2):
 Arr_proyectada = proyectar(Pry_int.to_numpy(),vectH,vectH2)
 
 
+
 HClust = AgglomerativeClustering
 hc_comp = HClust(distance_threshold = None, n_clusters = 3 , linkage = 'complete')
 hc_comp.fit(Arr_proyectada)
@@ -153,3 +155,84 @@ ax.scatter(Arr_proyectada[:,0], Arr_proyectada[:,1], c=hc_comp.labels_)
 ax.set_title("Agglomerative Clustering Results");
 
 # %% Ej 11
+def perfilProduccion(A,v1,v2):
+    proyectada = proyectar(A,v1,v2)
+    normas = []
+    for i in proyectada:
+        normas.append(np.linalg.norm(i,2))
+        
+    grafMin = A[np.argmin(normas)]
+    grafMax =A[np.argmax(normas)]
+    
+    graficoMin = pd.DataFrame({"Produccion":grafMin})
+    graficoMax = pd.DataFrame({"Produccion":grafMax})
+    
+    if (A.shape[0] == 40): # es Pry_int
+        graficoMin.index = Pry_col
+        graficoMax.index = Pry_col
+    elif (A.shape[0] == 80): # es H
+        graficoMin.index = Pry_col+Nic_col
+        graficoMax.index = Pry_col+Nic_col   
+                                                                   
+    graficoMin.plot(
+        kind="bar", 
+        rot=45, 
+        title='Producción minima', 
+        figsize=(20, 5)
+    )
+    
+   
+                                                                               
+    graficoMax.plot(
+        kind="bar", 
+        rot=45, 
+        title='Producción maxima', 
+        figsize=(20, 5)
+    )
+
+perfilProduccion(Pry_int.to_numpy(),vectH,vectH2)
+
+
+#%%
+
+A = f1.crearMatrizA()
+H = A @ np.linalg.inv(np.identity(A.shape[0]) - A)
+
+
+def centrarDatos(matriz):
+    # Centramos los datos
+    d, n = matriz.shape
+    m = np.mean(matriz.values, axis=1)  # Asegúrate de que m sea un array de numpy
+
+    X = matriz.values - np.tile(m.reshape((len(m), 1)), (1, n))  # Usa data.values para obtener el array de numpy
+    Mcov = np.dot(X, X.T) / n  # Covariance Matrix
+    return X, Mcov
+
+def PrimerasNColumnasDeV_con_mP(matriz, n):
+    d, _ = matriz.shape
+    V = []  # Lista para almacenar los autovectores
+    matriz_iterada = matriz.copy()
+
+    for i in range(n):
+        # Crear un vector inicial aleatorio
+        vect = create(d)
+        
+        # Usamos Hotelling para obtener el autovector
+        aval, vect = Hotelling(matriz_iterada, vect, valor)
+        
+        # Normalizamos el autovector
+        vectEstrella = vectorEstrella(vect)
+        
+        # Actualizamos la matriz iterada (descontamos el componente encontrado)
+        matriz_iterada -= aval * np.outer(vect, vectEstrella)
+        
+        # Añadimos el autovector encontrado a la lista
+        V.append(vect)
+    
+    return np.array(V).T  # Devolvemos las primeras N columnas de V como una matriz
+
+X, Mcov = centrarDatos(H)
+V = PrimerasNColumnasDeV_con_mP(Mcov,2)
+#%%
+
+perfilProduccion(H.to_numpy(),V[:,0],V[:,1])
