@@ -103,23 +103,123 @@ def monteCarlo(A):
     desvioEstandar = np.sqrt(DE/len(vectores))
     return promedio, desvioEstandar
 # =============================================================================
+# FUNCIONES TP 1                                     
+# =============================================================================
+def inversaLU(A):
+    L, U, P, cant_op = calcularLU(A)
+    filas, columnas = L.shape
+    Inv = np.zeros((filas, columnas))  # Inicializa una matriz de ceros
+    id = np.eye(filas)  # Crea una matriz identidad
+
+    for i in range(columnas):
+        y = sc.solve_triangular(L, id[:, i], lower=True)  # Resuelve L * y = e_i
+        x = sc.solve_triangular(U, y)  # Resuelve U * x = y
+        Inv[:, i] = x  # Almacena la columna en Inv
+
+    return Inv
+
+def calcularLU(A):
+    cant_op = 0
+    m, n = A.shape
+    Ac = np.zeros_like(A)
+    Ad = A.copy()
+    P = np.eye(m)
+    
+    if m != n:
+        print('Matriz no cuadrada')
+        return None, None, None, 0
+
+    for j in range(n):
+        pivote = Ad[j, j]
+        if pivote == 0:
+            for k in range(j + 1, m):
+                if Ad[k, j] != 0:
+                    Ad[[j, k]], P[[j, k]], Ac[[j, k], :j] = Ad[[k, j]], P[[k, j]], Ac[[k, j], :j]
+                    break
+            pivote = Ad[j, j]
+            if pivote == 0:
+                print('No se puede continuar: todos los pivotes en la columna son cero.')
+                return None, None, None, 0
+
+        for i in range(j + 1, m):
+            k = Ad[i, j] / pivote if pivote != 0 else 0
+            Ad[i] -= k * Ad[j]
+            Ac[i, j] = k
+            cant_op += 1
+
+    L = np.tril(Ac, -1) + np.eye(m)
+    U = Ad
+    return L, U, P, cant_op
+
+# =============================================================================
 # FUNCIONES PARA CONSIGNA 4
 # =============================================================================
-def suma_iterativa(A,n):
+
+def suma_iterativa(A, n):
     k = A.shape[0]
-    sucesion = np.identity(k) 
-    res = [1]
+    sucesion = np.identity(k)
     B = A.copy()
     for i in range(n):
-        sucesion = sucesion + A
-        A = A@B
+        sucesion += A
+        A = A @ B
     return sucesion
 
-#plt.imshow(suma_iterativa(A1,10))
-#plt.imshow(suma_iterativa(A1,100))
+def calcular_error_aproximacion(A, Id, n):
+    inversa_real = inversaLU(Id - A)
+    sucesion = suma_iterativa(A, n)
+    error = np.linalg.norm(sucesion - inversa_real, ord=2)
+    return error
 
-#plt.imshow(suma_iterativa(A2,10))
-#plt.imshow(suma_iterativa(A2,100))
+def graficar_sucesion(A, n_values, title):
+    fig, axes = plt.subplots(1, len(n_values), figsize=(15, 5))
+    Id = np.eye(A.shape[0])
+    for i, n in enumerate(n_values):
+        sucesion = suma_iterativa(A, n)
+        axes[i].imshow(sucesion, cmap="viridis")
+        axes[i].set_title(f'Suma de Potencias, n={n}')
+    fig.suptitle(title)
+    plt.show()
+
+def graficar_error(A, Id, n_max):
+    errores = [calcular_error_aproximacion(A, Id, n) for n in range(1, n_max + 1)]
+    plt.plot(range(1, n_max + 1), errores, marker='o')
+    plt.xlabel('Número de términos (n)')
+    plt.ylabel('Error de Aproximación')
+    plt.title('Convergencia del Error de Aproximación')
+    plt.yscale('log')  # Escala logarítmica para observar mejor la convergencia
+    plt.show()
+
+# =============================================================================
+# EJECUCIÓN DE LAS CONSIGNAS
+# =============================================================================
+
+A1 = np.array([
+    [0.186, 0.521, 0.014, 0.320, 0.134],
+    [0.240, 0.073, 0.219, 0.013, 0.327],
+    [0.098, 0.120, 0.311, 0.302, 0.208],
+    [0.173, 0.030, 0.133, 0.140, 0.074],
+    [0.303, 0.256, 0.323, 0.225, 0.257]
+])
+
+A2 = np.array([
+    [0.186, 0.521, 0.014, 0.320, 0.134],
+    [0.240, 0.073, 0.219, 0.013, 0.327],
+    [0.098, 0.120, 0.311, 0.302, 0.208],
+    [0.173, 0.030, 0.133, 0.140, 0.074],
+    [0.003, 0.256, 0.323, 0.225, 0.257]
+])
+
+# Id para calcular las aproximaciones
+#Id = np.identity(A1.shape[0])
+
+# (a) Graficar la serie de potencias para n = 10 y n = 100
+#n_values = [10, 100]
+#graficar_sucesion(A1, n_values, 'Sucesión de Potencias para A1')
+#graficar_sucesion(A2, n_values, 'Sucesión de Potencias para A2')
+
+# (d) Calcular y graficar el error de aproximación para diferentes valores de n
+#graficar_error(A1, Id, n_max=100)
+#graficar_error(A2, Id, n_max=100)
 # =============================================================================
 # FUNCIONES PARA CONSIGNA 10
 # =============================================================================
