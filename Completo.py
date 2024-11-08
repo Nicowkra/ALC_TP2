@@ -216,18 +216,18 @@ graficoMin.index = Pry_col
 graficoMax.index = Pry_col  
 
 graficoProyectado = pd.DataFrame({"Componente 1":proyectada[:,0],"Componente 2":proyectada[:,1]})
-    graficoProyectadoMinMax = graficoProyectado.loc[[normaMin,normaMax]]
+graficoProyectadoMinMax = graficoProyectado.loc[[normaMin,normaMax]]
 
-    ax = graficoProyectadoMinMax.plot(
-        kind="scatter", 
-        x = "Componente 1",
-        y = "Componente 2",
-        rot=45, 
-        title='Producción minima y maxima en CPA proyectado ',
-        figsize=(20, 5),
-        xlabel='Componente 1',
-        ylabel='Componente 2'
-    ) 
+ax = graficoProyectadoMinMax.plot(
+    kind="scatter", 
+    x = "Componente 1",
+    y = "Componente 2",
+    rot=45, 
+    title='Producción minima y maxima en CPA proyectado ',
+    figsize=(20, 5),
+    xlabel='Componente 1',
+    ylabel='Componente 2'
+) 
 
 graficoMin.plot(
     kind="bar", 
