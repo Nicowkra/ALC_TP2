@@ -153,47 +153,9 @@ hc_comp.fit(Arr_proyectada)
 fig , ax = plt.subplots(figsize =(8 ,8))
 ax.scatter(Arr_proyectada[:,0], Arr_proyectada[:,1], c=hc_comp.labels_)
 ax.set_title("Agglomerative Clustering Results");
-
-# %% Ej 11
-def perfilProduccion(A,v1,v2):
-    proyectada = proyectar(A,v1,v2)
-    normas = []
-    for i in proyectada:
-        normas.append(np.linalg.norm(i,2))
-        
-    grafMin = A[np.argmin(normas)] # puedo usar el indice de la menor norma con la matriz ya mantiene los lugares
-    grafMax =A[np.argmax(normas)]
-    
-    graficoMin = pd.DataFrame({"Produccion A":grafMin})
-    graficoMax = pd.DataFrame({"Produccion H":grafMax})
-    
-    graficoMin.index = Pry_col
-    graficoMax.index = Pry_col   
-    
-    graficoMin.plot(
-        kind="bar", 
-        rot=45, 
-        title='Producción minima',
-        figsize=(20, 5),
-        xlabel='Sectores',
-        ylabel='Millones de dólares'' (US$)'
-    )
-                                                                                   
-    graficoMax.plot(
-        kind="bar", 
-        rot=45, 
-        title='Producción maxima',
-        figsize=(20, 5),
-        xlabel='Sectores',
-        ylabel='Millones de dólares'' (US$)'
-    )
-
-perfilProduccion(Pry_int.to_numpy(),vectH,vectH2)
-
-print(np.matrix.sum(Pry_int.to_numpy()))
 #%%
 
-A = Pry_int
+A = Nic_int
 H = A @ np.linalg.inv(np.identity(A.shape[0]) - A)
 
 
@@ -231,7 +193,72 @@ def PrimerasNColumnasDeV_con_mP(matriz, n):
 
 X, Mcov = centrarDatos(H)
 V = PrimerasNColumnasDeV_con_mP(Mcov,2)
-#%%
+# %% Ej 11
 
-perfilProduccion(H.to_numpy(),V[:,0],V[:,1])
-HHH = H.to_numpy()
+
+A = H.to_numpy()
+v1 = V[:,0]
+v2 = V[:,1]
+proyectada = proyectar(A,v1,v2)
+normas = []
+for i in proyectada:
+    normas.append(np.linalg.norm(i,2))
+    
+normaMin = np.argmin(normas)
+normaMax = np.argmax(normas)
+grafMin = A[normaMin] # puedo usar el indice de la menor norma con la matriz ya mantiene los lugares
+grafMax =A[normaMax]
+
+graficoMin = pd.DataFrame({"Produccion":grafMin})
+graficoMax = pd.DataFrame({"Produccion":grafMax})
+
+graficoMin.index = Pry_col
+graficoMax.index = Pry_col  
+
+graficoProyectado = pd.DataFrame({"Componente 1":proyectada[:,0],"Componente 2":proyectada[:,1]})
+    graficoProyectadoMinMax = graficoProyectado.loc[[normaMin,normaMax]]
+
+    ax = graficoProyectadoMinMax.plot(
+        kind="scatter", 
+        x = "Componente 1",
+        y = "Componente 2",
+        rot=45, 
+        title='Producción minima y maxima en CPA proyectado ',
+        figsize=(20, 5),
+        xlabel='Componente 1',
+        ylabel='Componente 2'
+    ) 
+
+graficoMin.plot(
+    kind="bar", 
+    rot=45, 
+    title='Producción minima',
+    figsize=(20, 5),
+    xlabel='Sectores',
+    ylabel='Millones de dólares'' (US$)'
+)
+                                                                               
+graficoMax.plot(
+    kind="bar", 
+    rot=45, 
+    title='Producción maxima',
+    figsize=(20, 5),
+    xlabel='Sectores',
+    ylabel='Millones de dólares'' (US$)'
+)
+    
+for i, txt in enumerate(graficoProyectadoMinMax['Componente 2']):
+        ax.text(graficoProyectadoMinMax['Componente 1'][i], graficoProyectadoMinMax['Componente 2'][i], f'{[normaMin,normaMax]}', ha='right', va='bottom')
+#%%
+A = H.to_numpy()
+v1 = V[:,0]
+v2 = V[:,1]
+proyectada = proyectar(A,v1,v2)
+normas = []
+for i in proyectada:
+    normas.append(np.linalg.norm(i,2))
+valMin = (9999,0)
+for j in range(0,len(normas),1):
+    if normas[j] < valMin[0]:
+        valMin = (normas[j],j)
+        
