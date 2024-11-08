@@ -145,9 +145,9 @@ def proyectar(A,v1,v2):
 Arr_proyectada = proyectar(Pry_int.to_numpy(),vectH,vectH2)
 
 
-
+    
 HClust = AgglomerativeClustering
-hc_comp = HClust(distance_threshold = None, n_clusters = 3 , linkage = 'complete')
+hc_comp = HClust(distance_threshold = 200, n_clusters = None , linkage = 'single')
 hc_comp.fit(Arr_proyectada)
 
 fig , ax = plt.subplots(figsize =(8 ,8))
@@ -161,41 +161,39 @@ def perfilProduccion(A,v1,v2):
     for i in proyectada:
         normas.append(np.linalg.norm(i,2))
         
-    grafMin = A[np.argmin(normas)]
+    grafMin = A[np.argmin(normas)] # puedo usar el indice de la menor norma con la matriz ya mantiene los lugares
     grafMax =A[np.argmax(normas)]
     
-    graficoMin = pd.DataFrame({"Produccion":grafMin})
-    graficoMax = pd.DataFrame({"Produccion":grafMax})
+    graficoMin = pd.DataFrame({"Produccion A":grafMin})
+    graficoMax = pd.DataFrame({"Produccion H":grafMax})
     
-    if (A.shape[0] == 40): # es Pry_int
-        graficoMin.index = Pry_col
-        graficoMax.index = Pry_col
-    elif (A.shape[0] == 80): # es H
-        graficoMin.index = Pry_col+Nic_col
-        graficoMax.index = Pry_col+Nic_col   
-                                                                   
+    graficoMin.index = Pry_col
+    graficoMax.index = Pry_col   
+    
     graficoMin.plot(
         kind="bar", 
         rot=45, 
-        title='Producción minima', 
-        figsize=(20, 5)
+        title='Producción minima',
+        figsize=(20, 5),
+        xlabel='Sectores',
+        ylabel='Millones de dólares'' (US$)'
     )
-    
-   
-                                                                               
+                                                                                   
     graficoMax.plot(
         kind="bar", 
         rot=45, 
-        title='Producción maxima', 
-        figsize=(20, 5)
+        title='Producción maxima',
+        figsize=(20, 5),
+        xlabel='Sectores',
+        ylabel='Millones de dólares'' (US$)'
     )
 
 perfilProduccion(Pry_int.to_numpy(),vectH,vectH2)
 
-
+print(np.matrix.sum(Pry_int.to_numpy()))
 #%%
 
-A = f1.crearMatrizA()
+A = Pry_int
 H = A @ np.linalg.inv(np.identity(A.shape[0]) - A)
 
 
@@ -236,3 +234,4 @@ V = PrimerasNColumnasDeV_con_mP(Mcov,2)
 #%%
 
 perfilProduccion(H.to_numpy(),V[:,0],V[:,1])
+HHH = H.to_numpy()
